@@ -1,0 +1,3 @@
+[PSScheduledJob Help](./PSScheduledJob_Help.txt) > Get-JobTrigger
+
+[PSScheduledJob Help](./PSScheduledJob_Help.txt) > Get-JobTrigger  

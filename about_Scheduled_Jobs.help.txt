@@ -1,0 +1,3 @@
+[PSScheduledJob Help](./PSScheduledJob_Help.txt) > about_Scheduled_Jobs.help
+
+[PSScheduledJob Help](./PSScheduledJob_Help.txt) > about_Scheduled_Jobs.help  

@@ -1,9 +1,12 @@
-﻿[CmdletBinding()]
+﻿[CmdletBinding(SupportsShouldProcess=$true,
+               ConfirmImpact='High')]
 param
 (
     [System.String]$ModuleName = 'PSScheduledJob',
     [system.Version]$ModuleVersion,
-    [System.String]$Path = 'C:\Users\harlas\source\repos\PSModuleGitHubHelpGenerator\Help'
+    [System.String]$Path = 'C:\Users\harlas\source\repos\PSModuleGitHubHelpGenerator\Help',
+    [System.String]$ProjectName = "PSScheduledJob",
+    [System.String]$ProjectDefaultPageInRoot = "ReadMe.md"
 )
 
 begin
@@ -12,7 +15,7 @@ begin
     Write-Verbose " Powershell Script: $($MyInvocation.MyCommand.Name)"
     Write-Verbose " Script started with a following parameters:"
     Write-Verbose " Target Module Name: $ModuleName"
-    Write-Verbose " Target Module Name: $ModuleVersion"
+    Write-Verbose " Target Module Version: $ModuleVersion"
     Write-Verbose " Path for exporting help files: $Path"
     Write-Verbose "######################################################"
     Write-Verbose ""
@@ -48,7 +51,6 @@ process
         }
         Else
         {
-            Write-Verbose "######################################################"
             #Check for th epresence of the path
             Write-Verbose ""
             If(!(Test-Path -Path $Path -PathType Container))
@@ -68,7 +70,7 @@ process
                 {
                     Write-Error "Error occured when trying to import module '$TargetModule', version '$($TargetModule.version)'. Error details:`n$($_ | Select *)" -ErrorAction STOP
                 }
-
+                Write-Verbose ""
                 Write-Verbose "######################################################"
                 Write-Verbose " Powershell module found"
                 Write-Verbose " Name: $($TargetModule.Name)"
@@ -77,40 +79,69 @@ process
                 Write-Verbose " Path: $($TargetModule.Path)"
                 Write-Verbose "######################################################"
                 Write-Verbose ""
+                Write-Verbose "Checking for a presence of any '.txt' or '.md' files"
+                $TxtOrMDFiles = Get-ChildItem -Path $Path | Where-Object {$_.name -like '*.txt' -or $_.name -like '*.md'}
+                IF($TxtOrMDFiles -ne $null)
+                {
+                    if ($pscmdlet.ShouldProcess("multiple files with extension '*.txt' or 'md' which were found in folder '$Path'", "Delete"))
+                    {
+                        Write-Verbose "Deleting '*.txt' and '*.md' files from folder '$Path'"
+                        ForEach($ThisFile in $TxtOrMDFiles)
+                        {
+                            Remove-Item -Path $Thisfile.FullName -Force -ErrorAction Continue
+                        }
+                    }                    
+                }
+
                 $PSModuleName = $TargetModule.name
 
                 # Create Help for all commandlets in module
+                Write-Verbose "Generating help files for Cmdlets"
                 $AllCommands = Get-Command -Module $TargetModule
                 ForEach($ThisCommand in $AllCommands)
                 {
                     $ThisHelp = get-help $ThisCommand -Full  
                     $ThisHelpString = $ThisHelp | Out-String # convert from object model into string
-                    New-Item -Name ($ThisCommand.Name + ".txt") -Path $HelpFolder -Value $ThisHelpString -Force -ErrorAction Continue
+                    New-Item -Name ($ThisCommand.Name + ".md") -Path $HelpFolder -Value $ThisHelpString -Force -ErrorAction Continue | Out-Null
                 }
 
-                # If any "about" topics available, copy them to folder
+                # If any "about" topics available, copy them to folder and change the extension
                 Write-Verbose "Searching for and copying 'about' help files."
-                Get-Childitem -path $TargetModule.ModuleBase -Recurse -ErrorAction Continue |
-                    Where-Object {$_.name -like 'about_*' -and $_.name -like '*.txt'} |
-                        Copy-Item -Destination $HelpFolder -ErrorAction Continue
-
+                $CopiedFiles = @()
+                $CopiedFiles += Get-Childitem -path $TargetModule.ModuleBase -Recurse -ErrorAction Continue |
+                                    Where-Object {$_.name -like 'about_*' -and $_.name -like '*.txt'} |
+                                        Copy-Item -Destination $HelpFolder -Force -PassThru -ErrorAction Continue
+                Write-Verbose "Changing extension of 'about' files from '.txt' to '.md'"
+                # Change the extension of the 'about_' file from '.txt' to '.md' 
+                If($CopiedFiles.count -gt 0)
+                {
+                    ForEach($Thisfile in $CopiedFiles)
+                    {
+                        Rename-Item -Path $Thisfile.PSpath -NewName (($Thisfile.name).Replace('.txt','.md')) -Force -ErrorAction Continue
+                    }
+                }
 
                 # Generating content for the main help file (insert links to all 'about' and 'cmdlet' help files)
+                    # Define a link to the file in the root of the project
                 
-                $MainHelpPageName = $PSModuleName + "_Help.txt"
-                $MainHelpTXTContent = ""
-                $ListOfAllHelpFiles = Get-ChildItem -Path $HelpFolder | Where-Object Name -like '*.txt'
+                $ProjectRootFileRelativePath = '../' + $ProjectDefaultPageInRoot
+                $ProjectRootFileLink = "[$ProjectName]($ProjectRootFileRelativePath)"
+
+                $MainHelpPageName = $PSModuleName + "_Help.md"
+                $MainHelpTXTContent = "$ProjectRootFileLink >> $PSModuleName Help`n"
+                Write-Verbose "Generating Main help page with a name '$MainHelpPageName'"
+                $ListOfAllHelpFiles = Get-ChildItem -Path $HelpFolder | Where-Object Name -like '*.md'
                 
                     # Links to about files
                 $AboutFiles = $ListOfAllHelpFiles | Where-Object name -like 'about_*'
                 If($AboutFiles -ne $null)
                 {
-                    $MainHelpTXTContent += "# $PSModuleName About Help articles`n`n" 
+                    $MainHelpTXTContent += "`n# $PSModuleName Help`n`n## About Help articles`n`n" 
                     ForEach($ThisAboutFile in $AboutFiles)
                     {
-                        $DisplayString = (($ThisAboutFile.Name).Replace('.txt','')).Replace('_',' ') # remove .txt and replace underscore with space
+                        $DisplayString = (($ThisAboutFile.Name).Replace('.md','')).Replace('_',' ') # remove .txt and replace underscore with space
                         $FileRelativePath = './' + $ThisAboutFile.Name
-                        $MainHelpTXTContent += "* [$DisplayString)]($FileRelativePath)`n`n"
+                        $MainHelpTXTContent += "* [$DisplayString)]($FileRelativePath)`n"
                     }  
                 }
 
@@ -118,27 +149,28 @@ process
                 $CmdletFiles = $ListOfAllHelpFiles | Where-Object name -notlike 'about_*'
                 If($CmdletFiles -ne $null)
                 {
-                    $MainHelpTXTContent += "# $PSModuleName Cmdlets`n`n" 
+                    $MainHelpTXTContent += "`n## $PSModuleName Cmdlets`n`n" 
                     ForEach($ThisCmdletFile in $CmdletFiles)
                     {
-                        $DisplayString = (($ThisCmdletFile.Name).Replace('.txt','')).Replace('_',' ') # remove .txt and replace underscore with space
+                        $DisplayString = (($ThisCmdletFile.Name).Replace('.md','')).Replace('_',' ') # remove .txt and replace underscore with space
                         $FileRelativePath = './' + $ThisCmdletFile.Name
-                        $MainHelpTXTContent += "* [$DisplayString)]($FileRelativePath)`n`n"
+                        $MainHelpTXTContent += "* [$DisplayString)]($FileRelativePath)`n"
                     }  
                 }
                 
-                New-Item -Path $HelpFolder -Name $MainHelpPageName -Value $MainHelpTXTContent -Force  -ErrorAction Continue
+                New-Item -Path $HelpFolder -Name $MainHelpPageName -Value $MainHelpTXTContent -Force  -ErrorAction Continue | Out-Null
 
 
                 # Modify the top of all help pages except Main Help page
+                Write-Verbose "Modyfing Help pages - adding top navigation"
                 $MainHelpPageRelativePath = './' + $MainHelpPageName
-                $HelpPageTopBreadcrumbLine = "[$PSModuleName Help]($MainHelpPageRelativePath) > "
-                $ListOfAllHelpFiles = Get-ChildItem -Path $HelpFolder | Where-Object Name -ne $MainHelpPageName
+                $HelpPageTopBreadcrumbLine = $ProjectRootFileLink + " >> [$PSModuleName Help]($MainHelpPageRelativePath) >> "
+                $ListOfAllHelpFiles = Get-ChildItem -Path $HelpFolder | Where-Object{$_.Name -like '*.md' -and $_.Name -ne $MainHelpPageName}
                 ForEach($ThisHelpFile in $ListOfAllHelpFiles)
                 {
-                    $CurrentContent = Get-Content $ThisHelpFile
-                    $NewContent = $HelpPageTopBreadcrumbLine + ($ThisHelpFile.Name).Replace('.txt','') + "`n`n" + $CurrentContent
-                    Set-Content -Path $ThisHelpFile.PSPath -Value $NewContent -Force -ErrorAction Continue
+                    $CurrentContent = Get-Content -Path $ThisHelpFile.FullName
+                    $NewContent = $HelpPageTopBreadcrumbLine + ($ThisHelpFile.Name).Replace('.md','') + "`n`n## " + ($ThisHelpFile.Name).Replace('.md','') + "`n`n" + $CurrentContent
+                    Set-Content -Path $ThisHelpFile.FullName -Value $NewContent -Force -ErrorAction Continue
                 }
 
 

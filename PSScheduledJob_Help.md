@@ -1,48 +1,29 @@
-# PSScheduledJob About Help articles
+[PSScheduledJob](../ReadMe.md) >> PSScheduledJob Help
 
-* [about Scheduled Jobs.help)](./about_Scheduled_Jobs.help.txt)
+# PSScheduledJob Help
 
-* [about Scheduled Jobs Advanced.help)](./about_Scheduled_Jobs_Advanced.help.txt)
+## Help 'About' articles
 
-* [about Scheduled Jobs Basics.help)](./about_Scheduled_Jobs_Basics.help.txt)
+* [about Scheduled Jobs](./about_Scheduled_Jobs.md)
+* [about Scheduled Jobs Advanced](./about_Scheduled_Jobs_Advanced.md)
+* [about Scheduled Jobs Basics](./about_Scheduled_Jobs_Basics.md)
+* [about Scheduled Jobs Troubleshooting](./about_Scheduled_Jobs_Troubleshooting.md)
 
-* [about Scheduled Jobs Troubleshooting.help)](./about_Scheduled_Jobs_Troubleshooting.help.txt)
+## PSScheduledJob Cmdlets ##
 
-# PSScheduledJob Cmdlets
-
-* [Add-JobTrigger)](./Add-JobTrigger.txt)
-
-* [Disable-JobTrigger)](./Disable-JobTrigger.txt)
-
-* [Disable-ScheduledJob)](./Disable-ScheduledJob.txt)
-
-* [Enable-JobTrigger)](./Enable-JobTrigger.txt)
-
-* [Enable-ScheduledJob)](./Enable-ScheduledJob.txt)
-
-* [Get-JobTrigger)](./Get-JobTrigger.txt)
-
-* [Get-ScheduledJob)](./Get-ScheduledJob.txt)
-
-* [Get-ScheduledJobOption)](./Get-ScheduledJobOption.txt)
-
-* [Module PSScheduledJob Help)](./Module_PSScheduledJob_Help.txt)
-
-* [New-JobTrigger)](./New-JobTrigger.txt)
-
-* [New-ScheduledJobOption)](./New-ScheduledJobOption.txt)
-
-* [PSScheduledJob Help)](./PSScheduledJob_Help.txt)
-
-* [Register-ScheduledJob)](./Register-ScheduledJob.txt)
-
-* [Remove-JobTrigger)](./Remove-JobTrigger.txt)
-
-* [Set-JobTrigger)](./Set-JobTrigger.txt)
-
-* [Set-ScheduledJob)](./Set-ScheduledJob.txt)
-
-* [Set-ScheduledJobOption)](./Set-ScheduledJobOption.txt)
-
-* [Unregister-ScheduledJob)](./Unregister-ScheduledJob.txt)
-
+* [Add-JobTrigger](./Add-JobTrigger.md)
+* [Disable-JobTrigger](./Disable-JobTrigger.md)
+* [Disable-ScheduledJob](./Disable-ScheduledJob.md)
+* [Enable-JobTrigger](./Enable-JobTrigger.md)
+* [Enable-ScheduledJob](./Enable-ScheduledJob.md)
+* [Get-JobTrigger](./Get-JobTrigger.md)
+* [Get-ScheduledJob](./Get-ScheduledJob.md)
+* [Get-ScheduledJobOption](./Get-ScheduledJobOption.md)
+* [New-JobTrigger](./New-JobTrigger.md)
+* [New-ScheduledJobOption](./New-ScheduledJobOption.md)
+* [Register-ScheduledJob](./Register-ScheduledJob.md)
+* [Remove-JobTrigger](./Remove-JobTrigger.md)
+* [Set-JobTrigger](./Set-JobTrigger.md)
+* [Set-ScheduledJob](./Set-ScheduledJob.md)
+* [Set-ScheduledJobOption](./Set-ScheduledJobOption.md)
+* [Unregister-ScheduledJob](./Unregister-ScheduledJob.md)
